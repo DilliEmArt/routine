@@ -1,0 +1,322 @@
+!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>บันทึกร่างกาย - เส้นทางสร้างวินัย</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'IBM Plex Sans Thai', sans-serif;
+            background-color: #f8fafc;
+        }
+        .nav-link {
+            @apply px-4 py-2 rounded-full transition-colors font-semibold text-sm md:text-base shadow-sm;
+        }
+        .nav-link.active {
+            @apply bg-teal-500 text-white shadow-md;
+        }
+        .nav-link:not(.active) {
+            @apply bg-white text-slate-700 hover:bg-slate-100;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 350px;
+            max-height: 60vh;
+        }
+    </style>
+</head>
+<body class="text-slate-800">
+
+    <div class="container mx-auto p-4 md:p-8 max-w-5xl">
+
+        <header class="text-center mb-8">
+            <h1 class="text-4xl md:text-5xl font-bold text-slate-800">บันทึกร่างกาย</h1>
+            <p class="text-slate-500 mt-2">ติดตามการเปลี่ยนแปลงของร่างกายคุณในแต่ละวัน</p>
+        </header>
+
+        <nav class="flex justify-center mb-12 gap-x-2 md:gap-x-4">
+            <a href="./index.html" class="nav-link">ภารกิจ</a>
+            <a href="./dashboard.html" class="nav-link">แดชบอร์ด</a>
+            <a href="./wallet.html" class="nav-link">กระเป๋าตัง</a>
+            <a href="./body.html" class="nav-link active">ร่างกาย</a>
+        </nav>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- Input Form -->
+            <div class="lg:col-span-1">
+                <div id="form-container" class="bg-white p-6 rounded-2xl shadow-lg sticky top-8">
+                    <h3 class="text-xl font-bold mb-4">บันทึกข้อมูลวันนี้</h3>
+                    <div id="body-form" class="space-y-6">
+                        <div class="space-y-2">
+                            <label for="weight" class="block font-medium text-slate-700">น้ำหนัก (kg)</label>
+                            <div class="flex space-x-2">
+                                <input type="number" step="0.1" id="weight" placeholder="เช่น 65.5" class="block w-full px-3 py-2 bg-white border border-slate-300 rounded-md text-sm shadow-sm placeholder-slate-400 focus:outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500" required>
+                                <button id="save-weight-btn" class="bg-teal-500 hover:bg-teal-600 text-white font-bold py-2 px-4 rounded-lg">บันทึก</button>
+                            </div>
+                        </div>
+                        <div class="space-y-2">
+                            <label for="water" class="block font-medium text-slate-700">น้ำในร่างกาย (%)</label>
+                            <div class="flex space-x-2">
+                                <input type="number" step="0.1" id="water" placeholder="เช่น 55.0" class="block w-full px-3 py-2 bg-white border border-slate-300 rounded-md text-sm shadow-sm placeholder-slate-400 focus:outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500" required>
+                                <button id="save-water-btn" class="bg-teal-500 hover:bg-teal-600 text-white font-bold py-2 px-4 rounded-lg">บันทึก</button>
+                            </div>
+                        </div>
+                        <div class="space-y-2">
+                            <label for="fat" class="block font-medium text-slate-700">ไขมันในร่างกาย (%)</label>
+                            <div class="flex space-x-2">
+                                <input type="number" step="0.1" id="fat" placeholder="เช่น 18.2" class="block w-full px-3 py-2 bg-white border border-slate-300 rounded-md text-sm shadow-sm placeholder-slate-400 focus:outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500" required>
+                                <button id="save-fat-btn" class="bg-teal-500 hover:bg-teal-600 text-white font-bold py-2 px-4 rounded-lg">บันทึก</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="form-message" class="text-center p-4 mt-4 bg-slate-100 text-slate-600 rounded-lg hidden"></div>
+                </div>
+            </div>
+
+            <!-- Chart & History -->
+            <div class="lg:col-span-2 space-y-8">
+                <div class="bg-white p-6 rounded-2xl shadow-lg">
+                    <h3 class="text-xl font-bold mb-4 text-center">กราฟการเปลี่ยนแปลง</h3>
+                    <div class="chart-container">
+                        <canvas id="bodyChart"></canvas>
+                    </div>
+                </div>
+                <div class="bg-white p-6 rounded-2xl shadow-lg">
+                    <h3 class="text-xl font-bold mb-4">ประวัติการบันทึก</h3>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full">
+                            <thead class="bg-slate-50">
+                                <tr>
+                                    <th class="px-4 py-2 text-left text-sm font-semibold text-slate-600">วันที่</th>
+                                    <th class="px-4 py-2 text-right text-sm font-semibold text-slate-600">น้ำหนัก (kg)</th>
+                                    <th class="px-4 py-2 text-right text-sm font-semibold text-slate-600">% น้ำ</th>
+                                    <th class="px-4 py-2 text-right text-sm font-semibold text-slate-600">% ไขมัน</th>
+                                </tr>
+                            </thead>
+                            <tbody id="history-table-body">
+                                <!-- History will be injected here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const formContainer = document.getElementById('form-container');
+            const bodyForm = document.getElementById('body-form');
+            const formMessage = document.getElementById('form-message');
+            
+            const weightInput = document.getElementById('weight');
+            const waterInput = document.getElementById('water');
+            const fatInput = document.getElementById('fat');
+            
+            const saveWeightBtn = document.getElementById('save-weight-btn');
+            const saveWaterBtn = document.getElementById('save-water-btn');
+            const saveFatBtn = document.getElementById('save-fat-btn');
+
+            const historyTableBody = document.getElementById('history-table-body');
+            const chartCanvas = document.getElementById('bodyChart');
+
+            let bodyStats = [];
+            let bodyChart;
+
+            function loadState() {
+                const savedState = localStorage.getItem('disciplineGameState');
+                if (savedState) {
+                    const state = JSON.parse(savedState);
+                    bodyStats = state.bodyStats || [];
+                }
+                renderHistory();
+                initChart();
+                checkDay();
+            }
+
+            function saveState() {
+                const savedState = JSON.parse(localStorage.getItem('disciplineGameState')) || {};
+                const newState = { ...savedState, bodyStats };
+                localStorage.setItem('disciplineGameState', JSON.stringify(newState));
+            }
+            
+            function checkDay() {
+                const today = new Date();
+                const day = today.getDay(); // Sunday = 0, Saturday = 6
+                const todayStr = today.toISOString().slice(0, 10);
+                const todayStat = bodyStats.find(stat => stat.date === todayStr);
+
+                if (day === 0 || day === 6) {
+                    bodyForm.classList.add('hidden');
+                    formMessage.classList.remove('hidden');
+                    formMessage.textContent = 'วันนี้เป็นวันหยุด พักผ่อนและสนุกให้เต็มที่!';
+                    return;
+                }
+                
+                bodyForm.classList.remove('hidden');
+                formMessage.classList.add('hidden');
+
+                if (todayStat) {
+                    if (todayStat.weight) {
+                        weightInput.value = todayStat.weight;
+                        weightInput.disabled = true;
+                        saveWeightBtn.disabled = true;
+                        saveWeightBtn.textContent = 'บันทึกแล้ว';
+                        saveWeightBtn.classList.add('bg-slate-400', 'cursor-not-allowed');
+                        saveWeightBtn.classList.remove('bg-teal-500', 'hover:bg-teal-600');
+                    }
+                    if (todayStat.water) {
+                        waterInput.value = todayStat.water;
+                        waterInput.disabled = true;
+                        saveWaterBtn.disabled = true;
+                        saveWaterBtn.textContent = 'บันทึกแล้ว';
+                        saveWaterBtn.classList.add('bg-slate-400', 'cursor-not-allowed');
+                        saveWaterBtn.classList.remove('bg-teal-500', 'hover:bg-teal-600');
+                    }
+                    if (todayStat.fat) {
+                        fatInput.value = todayStat.fat;
+                        fatInput.disabled = true;
+                        saveFatBtn.disabled = true;
+                        saveFatBtn.textContent = 'บันทึกแล้ว';
+                        saveFatBtn.classList.add('bg-slate-400', 'cursor-not-allowed');
+                        saveFatBtn.classList.remove('bg-teal-500', 'hover:bg-teal-600');
+                    }
+                }
+            }
+
+            function saveOrUpdateStat(metric, value) {
+                if (isNaN(value) || value <= 0) {
+                    alert('กรุณาใส่ค่าที่ถูกต้อง');
+                    return;
+                }
+                const todayStr = new Date().toISOString().slice(0, 10);
+                let todayStat = bodyStats.find(stat => stat.date === todayStr);
+
+                if (todayStat) {
+                    todayStat[metric] = value;
+                } else {
+                    todayStat = { date: todayStr, weight: null, water: null, fat: null };
+                    todayStat[metric] = value;
+                    bodyStats.push(todayStat);
+                }
+                
+                bodyStats.sort((a, b) => new Date(a.date) - new Date(b.date));
+                saveState();
+                renderHistory();
+                updateChart();
+                checkDay();
+            }
+
+            function renderHistory() {
+                historyTableBody.innerHTML = '';
+                [...bodyStats].reverse().forEach(stat => {
+                    const row = document.createElement('tr');
+                    row.className = 'border-b border-slate-200';
+                    row.innerHTML = `
+                        <td class="px-4 py-3">${new Date(stat.date).toLocaleDateString('th-TH', { day: '2-digit', month: 'short', year: 'numeric' })}</td>
+                        <td class="px-4 py-3 text-right font-medium">${stat.weight ? stat.weight.toFixed(1) : '-'}</td>
+                        <td class="px-4 py-3 text-right">${stat.water ? stat.water.toFixed(1) : '-'}</td>
+                        <td class="px-4 py-3 text-right">${stat.fat ? stat.fat.toFixed(1) : '-'}</td>
+                    `;
+                    historyTableBody.appendChild(row);
+                });
+            }
+
+            function initChart() {
+                const labels = bodyStats.map(s => new Date(s.date).toLocaleDateString('th-TH', { day: 'numeric', month: 'short' }));
+                const weightData = bodyStats.map(s => s.weight);
+                const waterData = bodyStats.map(s => s.water);
+                const fatData = bodyStats.map(s => s.fat);
+
+                const ctx = chartCanvas.getContext('2d');
+                bodyChart = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: labels,
+                        datasets: [
+                            {
+                                label: 'น้ำหนัก (kg)',
+                                data: weightData,
+                                borderColor: '#0f766e', // teal-700
+                                backgroundColor: 'rgba(13, 148, 136, 0.1)',
+                                tension: 0.1,
+                                yAxisID: 'y'
+                            },
+                            {
+                                label: '% น้ำ',
+                                data: waterData,
+                                borderColor: '#0ea5e9', // sky-500
+                                backgroundColor: 'rgba(14, 165, 233, 0.1)',
+                                tension: 0.1,
+                                yAxisID: 'y1'
+                            },
+                            {
+                                label: '% ไขมัน',
+                                data: fatData,
+                                borderColor: '#f43f5e', // rose-500
+                                backgroundColor: 'rgba(244, 63, 94, 0.1)',
+                                tension: 0.1,
+                                yAxisID: 'y1'
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        interaction: {
+                            mode: 'index',
+                            intersect: false,
+                        },
+                        scales: {
+                            y: {
+                                type: 'linear',
+                                display: true,
+                                position: 'left',
+                                title: {
+                                    display: true,
+                                    text: 'น้ำหนัก (kg)'
+                                }
+                            },
+                            y1: {
+                                type: 'linear',
+                                display: true,
+                                position: 'right',
+                                title: {
+                                    display: true,
+                                    text: 'เปอร์เซ็นต์ (%)'
+                                },
+                                grid: {
+                                    drawOnChartArea: false, 
+                                },
+                            },
+                        }
+                    }
+                });
+            }
+
+            function updateChart() {
+                bodyChart.data.labels = bodyStats.map(s => new Date(s.date).toLocaleDateString('th-TH', { day: 'numeric', month: 'short' }));
+                bodyChart.data.datasets[0].data = bodyStats.map(s => s.weight);
+                bodyChart.data.datasets[1].data = bodyStats.map(s => s.water);
+                bodyChart.data.datasets[2].data = bodyStats.map(s => s.fat);
+                bodyChart.update();
+            }
+
+            saveWeightBtn.addEventListener('click', () => saveOrUpdateStat('weight', parseFloat(weightInput.value)));
+            saveWaterBtn.addEventListener('click', () => saveOrUpdateStat('water', parseFloat(waterInput.value)));
+            saveFatBtn.addEventListener('click', () => saveOrUpdateStat('fat', parseFloat(fatInput.value)));
+
+            loadState();
+        });
+    </script>
+</body>
+</html>

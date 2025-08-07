@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>กระเป๋าตัง - เส้นทางสร้างวินัย</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'IBM Plex Sans Thai', sans-serif;
+            background-color: #f8fafc;
+        }
+        .nav-link {
+            @apply px-4 py-2 rounded-full transition-colors font-semibold text-sm md:text-base shadow-sm;
+        }
+        .nav-link.active {
+            @apply bg-teal-500 text-white shadow-md;
+        }
+        .nav-link:not(.active) {
+            @apply bg-white text-slate-700 hover:bg-slate-100;
+        }
+        .transaction-list li:hover .delete-btn {
+            opacity: 1;
+        }
+        .wallet-card {
+            background: linear-gradient(45deg, #14b8a6, #0d9488);
+        }
+    </style>
+</head>
+<body class="text-slate-800">
+
+    <div class="container mx-auto p-4 md:p-8 max-w-4xl">
+
+        <header class="text-center mb-8">
+            <h1 class="text-4xl md:text-5xl font-bold text-slate-800">กระเป๋าตัง</h1>
+            <p class="text-slate-500 mt-2">บันทึกและติดตามการเงินของคุณ</p>
+        </header>
+
+        <nav class="flex justify-center mb-12 gap-x-2 md:gap-x-4">
+            <a href="./index.html" class="nav-link">ภารกิจ</a>
+            <a href="./dashboard.html" class="nav-link">แดชบอร์ด</a>
+            <a href="./wallet.html" class="nav-link active">กระเป๋าตัง</a>
+            <a href="./body.html" class="nav-link">ร่างกาย</a>
+        </nav>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- Wallet Card & History -->
+            <div class="lg:col-span-2 space-y-8">
+                <!-- Wallet Card -->
+                <div class="wallet-card text-white p-8 rounded-2xl shadow-2xl flex flex-col justify-between">
+                    <div>
+                        <p class="text-lg opacity-80">ยอดเงินคงเหลือ</p>
+                        <p id="balance" class="text-5xl font-bold tracking-wider">฿0.00</p>
+                    </div>
+                    <div class="mt-8 flex space-x-4">
+                        <button id="add-income-btn" class="flex-1 bg-white bg-opacity-20 hover:bg-opacity-30 text-white font-bold py-3 px-4 rounded-lg transition-colors">เพิ่มรายรับ</button>
+                        <button id="add-expense-btn" class="flex-1 bg-black bg-opacity-20 hover:bg-opacity-30 text-white font-bold py-3 px-4 rounded-lg transition-colors">เพิ่มรายจ่าย</button>
+                    </div>
+                </div>
+                <!-- Transaction History -->
+                <div class="bg-white p-6 rounded-2xl shadow-lg">
+                    <h3 class="text-xl font-bold mb-4">ประวัติรายการ</h3>
+                    <ul id="list" class="transaction-list space-y-2">
+                        <!-- Transactions will be injected here -->
+                    </ul>
+                </div>
+            </div>
+            <!-- Summary -->
+            <div class="lg:col-span-1">
+                <div class="bg-white p-6 rounded-2xl shadow-lg sticky top-8">
+                    <h3 class="text-xl font-bold mb-4 text-center">สรุปภาพรวม</h3>
+                    <div class="space-y-4">
+                        <div class="flex justify-between items-center bg-green-50 p-3 rounded-lg">
+                            <span class="font-semibold text-green-800">รายรับทั้งหมด</span>
+                            <span id="money-plus" class="font-bold text-green-800">฿0.00</span>
+                        </div>
+                        <div class="flex justify-between items-center bg-red-50 p-3 rounded-lg">
+                            <span class="font-semibold text-red-800">รายจ่ายทั้งหมด</span>
+                            <span id="money-minus" class="font-bold text-red-800">฿0.00</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Transaction Modal -->
+    <div id="transaction-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-2xl p-8 max-w-sm w-full shadow-2xl">
+            <h3 id="modal-title" class="text-2xl font-bold mb-6 text-center">เพิ่มรายการ</h3>
+            <form id="form" class="space-y-4">
+                <div>
+                    <label for="text" class="block font-medium text-slate-700">รายการ</label>
+                    <input type="text" id="text" placeholder="เช่น เงินเดือน, ค่ากาแฟ..." class="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md text-sm shadow-sm placeholder-slate-400 focus:outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500">
+                </div>
+                <div>
+                    <label for="amount" class="block font-medium text-slate-700">จำนวนเงิน</label>
+                    <input type="number" id="amount" placeholder="100" class="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md text-sm shadow-sm placeholder-slate-400 focus:outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500">
+                </div>
+                <button id="modal-submit-btn" class="w-full text-white font-bold py-3 px-4 rounded-lg transition-colors">เพิ่ม</button>
+                <button type="button" id="modal-cancel-btn" class="w-full mt-2 text-center text-slate-500 hover:text-slate-700">ยกเลิก</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const balance = document.getElementById('balance');
+            const money_plus = document.getElementById('money-plus');
+            const money_minus = document.getElementById('money-minus');
+            const list = document.getElementById('list');
+            const form = document.getElementById('form');
+            const textInput = document.getElementById('text');
+            const amountInput = document.getElementById('amount');
+            
+            const transactionModal = document.getElementById('transaction-modal');
+            const modalTitle = transactionModal.querySelector('#modal-title');
+            const modalSubmitBtn = transactionModal.querySelector('#modal-submit-btn');
+            const modalCancelBtn = transactionModal.querySelector('#modal-cancel-btn');
+            const addIncomeBtn = document.getElementById('add-income-btn');
+            const addExpenseBtn = document.getElementById('add-expense-btn');
+
+            let transactions = [];
+            let currentTransactionType = 'income';
+
+            function loadState() {
+                const savedState = localStorage.getItem('disciplineGameState');
+                if (savedState) {
+                    const state = JSON.parse(savedState);
+                    transactions = state.transactions || [];
+                }
+                updateUI();
+            }
+
+            function saveState() {
+                const savedState = JSON.parse(localStorage.getItem('disciplineGameState')) || {};
+                const newState = { ...savedState, transactions };
+                localStorage.setItem('disciplineGameState', JSON.stringify(newState));
+            }
+
+            function openModal(type) {
+                currentTransactionType = type;
+                form.reset();
+                if (type === 'income') {
+                    modalTitle.textContent = 'บันทึกรายรับ';
+                    modalSubmitBtn.className = 'w-full bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-4 rounded-lg transition-colors';
+                } else {
+                    modalTitle.textContent = 'บันทึกรายจ่าย';
+                    modalSubmitBtn.className = 'w-full bg-red-500 hover:bg-red-600 text-white font-bold py-3 px-4 rounded-lg transition-colors';
+                }
+                transactionModal.classList.remove('hidden');
+            }
+
+            function closeModal() {
+                transactionModal.classList.add('hidden');
+            }
+
+            function addTransaction(e) {
+                e.preventDefault();
+                if (textInput.value.trim() === '' || amountInput.value.trim() === '') {
+                    alert('กรุณาใส่ข้อมูลให้ครบ');
+                    return;
+                }
+                
+                const amount = currentTransactionType === 'income' 
+                    ? +Math.abs(amountInput.value)
+                    : -Math.abs(amountInput.value);
+
+                const transaction = {
+                    id: Date.now(),
+                    text: textInput.value,
+                    amount: amount
+                };
+
+                transactions.push(transaction);
+                saveState();
+                updateUI();
+                closeModal();
+            }
+
+            function removeTransaction(id) {
+                transactions = transactions.filter(transaction => transaction.id !== id);
+                saveState();
+                updateUI();
+            }
+
+            function addTransactionDOM(transaction) {
+                const sign = transaction.amount < 0 ? '-' : '+';
+                const item = document.createElement('li');
+                item.classList.add(transaction.amount < 0 ? 'border-red-500' : 'border-green-500');
+                item.classList.add('bg-slate-50', 'p-3', 'rounded-md', 'flex', 'justify-between', 'items-center', 'border-l-4', 'relative');
+
+                item.innerHTML = `
+                    <span>${transaction.text}</span>
+                    <span class="font-bold ${transaction.amount < 0 ? 'text-red-600' : 'text-green-600'}">
+                        ${sign}฿${Math.abs(transaction.amount).toLocaleString('th-TH', {minimumFractionDigits: 2})}
+                    </span>
+                    <button class="delete-btn bg-red-600 text-white w-6 h-6 rounded-full absolute -right-3 top-1/2 -translate-y-1/2 opacity-0 transition-opacity" onclick="removeTransaction(${transaction.id})">X</button>
+                `;
+                list.appendChild(item);
+            }
+
+            function updateValues() {
+                const amounts = transactions.map(t => t.amount);
+                const total = amounts.reduce((acc, item) => (acc += item), 0);
+                const income = amounts.filter(item => item > 0).reduce((acc, item) => (acc += item), 0);
+                const expense = (amounts.filter(item => item < 0).reduce((acc, item) => (acc += item), 0) * -1);
+
+                balance.innerText = `฿${total.toLocaleString('th-TH', {minimumFractionDigits: 2})}`;
+                money_plus.innerText = `฿${income.toLocaleString('th-TH', {minimumFractionDigits: 2})}`;
+                money_minus.innerText = `฿${expense.toLocaleString('th-TH', {minimumFractionDigits: 2})}`;
+            }
+
+            function updateUI() {
+                list.innerHTML = '';
+                transactions.sort((a,b) => b.id - a.id).forEach(addTransactionDOM);
+                updateValues();
+            }
+
+            window.removeTransaction = removeTransaction;
+            addIncomeBtn.addEventListener('click', () => openModal('income'));
+            addExpenseBtn.addEventListener('click', () => openModal('expense'));
+            modalCancelBtn.addEventListener('click', closeModal);
+            transactionModal.addEventListener('click', (e) => {
+                if (e.target === transactionModal) closeModal();
+            });
+            form.addEventListener('submit', addTransaction);
+            
+            loadState();
+        });
+    </script>
+</body>
+</html>

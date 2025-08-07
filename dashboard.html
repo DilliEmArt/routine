@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>แดชบอร์ด - เส้นทางสร้างวินัย</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'IBM Plex Sans Thai', sans-serif;
+            background-color: #f8fafc;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 700px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 300px;
+            max-height: 50vh;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 400px;
+            }
+        }
+        .nav-link {
+            @apply px-4 py-2 rounded-full transition-colors font-semibold text-sm md:text-base shadow-sm;
+        }
+        .nav-link.active {
+            @apply bg-teal-500 text-white shadow-md;
+        }
+        .nav-link:not(.active) {
+            @apply bg-white text-slate-700 hover:bg-slate-100;
+        }
+    </style>
+</head>
+<body class="text-slate-800">
+
+    <div class="container mx-auto p-4 md:p-8 max-w-4xl">
+
+        <header class="text-center mb-8">
+            <h1 class="text-4xl md:text-5xl font-bold text-slate-800">แดชบอร์ด</h1>
+            <p class="text-slate-500 mt-2">ภาพรวมความคืบหน้าและคะแนนสะสมของคุณ</p>
+        </header>
+
+        <nav class="flex justify-center mb-12 gap-x-2 md:gap-x-4">
+            <a href="./index.html" class="nav-link">ภารกิจ</a>
+            <a href="./dashboard.html" class="nav-link active">แดชบอร์ด</a>
+            <a href="./wallet.html" class="nav-link">กระเป๋าตัง</a>
+            <a href="./body.html" class="nav-link">ร่างกาย</a>
+        </nav>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+            <!-- Weekly Summary -->
+            <div class="bg-white p-6 rounded-2xl shadow-lg">
+                <h2 class="text-2xl font-bold mb-4 text-center">สรุปผลประจำสัปดาห์</h2>
+                <div class="flex justify-around text-center mb-6">
+                    <div>
+                        <p class="text-slate-500">สัปดาห์ที่แล้ว</p>
+                        <p id="last-week-score" class="text-4xl font-bold text-slate-500">0</p>
+                    </div>
+                    <div>
+                        <p class="text-slate-500">สัปดาห์นี้</p>
+                        <p id="this-week-score" class="text-4xl font-bold text-teal-600">0</p>
+                    </div>
+                </div>
+                <div id="summary-result" class="text-center p-4 rounded-lg">
+                    <!-- Result will be injected here -->
+                </div>
+            </div>
+            <!-- Settings -->
+            <div class="bg-white p-6 rounded-2xl shadow-lg">
+                 <h2 class="text-2xl font-bold mb-4 text-center">ตั้งค่าเกม</h2>
+                 <div class="space-y-4">
+                    <div>
+                        <label for="goal-input" class="block font-medium text-slate-700">เป้าหมายคะแนนสัปดาห์นี้</label>
+                        <input type="number" id="goal-input" class="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md text-sm shadow-sm placeholder-slate-400 focus:outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500" placeholder="เช่น 500">
+                    </div>
+                    <div>
+                        <label for="reward-input" class="block font-medium text-slate-700">รางวัล (ถ้าทำได้ดีกว่าวีคที่แล้ว)</label>
+                        <input type="text" id="reward-input" class="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md text-sm shadow-sm placeholder-slate-400 focus:outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500" placeholder="เช่น ซื้อหนังสือ">
+                    </div>
+                    <div>
+                        <label for="punishment-input" class="block font-medium text-slate-700">บทลงโทษ (ถ้าทำได้แย่กว่า)</label>
+                        <input type="text" id="punishment-input" class="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md text-sm shadow-sm placeholder-slate-400 focus:outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500" placeholder="เช่น งดขนม 1 วัน">
+                    </div>
+                    <button id="save-settings-btn" class="w-full bg-teal-500 hover:bg-teal-600 text-white font-bold py-2 px-4 rounded-lg">บันทึกการตั้งค่า</button>
+                 </div>
+            </div>
+        </div>
+
+        <div class="bg-white p-6 rounded-2xl shadow-lg">
+            <h3 class="font-semibold mb-4 text-center text-xl">กราฟคะแนนรายสัปดาห์</h3>
+            <div class="chart-container">
+                <canvas id="progressChart"></canvas>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const lastWeekScoreEl = document.getElementById('last-week-score');
+            const thisWeekScoreEl = document.getElementById('this-week-score');
+            const summaryResultEl = document.getElementById('summary-result');
+            const goalInput = document.getElementById('goal-input');
+            const rewardInput = document.getElementById('reward-input');
+            const punishmentInput = document.getElementById('punishment-input');
+            const saveSettingsBtn = document.getElementById('save-settings-btn');
+            
+            let weeklyScores = [0, 0, 0, 0, 0, 0, 0];
+            let lastWeekTotalScore = 0;
+            let settings = {
+                goal: 500,
+                reward: 'ซื้อหนังสือ',
+                punishment: 'งดขนม 1 วัน'
+            };
+
+            function loadState() {
+                const savedState = localStorage.getItem('disciplineGameState');
+                if (savedState) {
+                    const state = JSON.parse(savedState);
+                    weeklyScores = state.weeklyScores || [0, 0, 0, 0, 0, 0, 0];
+                    lastWeekTotalScore = state.lastWeekTotalScore || 0;
+                    if (state.settings) {
+                        settings = state.settings;
+                    }
+                }
+                updateDashboard();
+                updateSettingsForm();
+            }
+
+            function saveSettings() {
+                settings.goal = parseInt(goalInput.value) || 0;
+                settings.reward = rewardInput.value || 'ไม่มี';
+                settings.punishment = punishmentInput.value || 'ไม่มี';
+
+                const savedState = JSON.parse(localStorage.getItem('disciplineGameState')) || {};
+                const newState = { ...savedState, settings };
+                localStorage.setItem('disciplineGameState', JSON.stringify(newState));
+                alert('บันทึกการตั้งค่าแล้ว!');
+                updateDashboard();
+            }
+
+            function updateSettingsForm() {
+                goalInput.value = settings.goal;
+                rewardInput.value = settings.reward;
+                punishmentInput.value = settings.punishment;
+            }
+
+            function updateDashboard() {
+                const thisWeekTotalScore = weeklyScores.reduce((a, b) => a + b, 0);
+                
+                lastWeekScoreEl.textContent = lastWeekTotalScore;
+                thisWeekScoreEl.textContent = thisWeekTotalScore;
+
+                summaryResultEl.innerHTML = '';
+                let resultText = '';
+                let resultClass = '';
+                let finalReward = '';
+
+                if (thisWeekTotalScore > lastWeekTotalScore) {
+                    resultText = 'ยอดเยี่ยม! ทำได้ดีกว่าสัปดาห์ที่แล้ว';
+                    resultClass = 'bg-green-100 text-green-800';
+                    finalReward = `รางวัลของคุณคือ: <strong class="font-bold">${settings.reward}</strong>`;
+                } else if (thisWeekTotalScore < lastWeekTotalScore && lastWeekTotalScore > 0) {
+                    resultText = 'ไม่เป็นไร! สัปดาห์หน้าเอาใหม่นะ';
+                    resultClass = 'bg-red-100 text-red-800';
+                    finalReward = `บทลงโทษคือ: <strong class="font-bold">${settings.punishment}</strong>`;
+                } else {
+                    resultText = 'เริ่มต้นสัปดาห์ใหม่กันเถอะ!';
+                    resultClass = 'bg-slate-100 text-slate-800';
+                }
+                
+                summaryResultEl.className = `text-center p-4 rounded-lg ${resultClass}`;
+                summaryResultEl.innerHTML = `<p>${resultText}</p><p class="mt-1">${finalReward}</p>`;
+            }
+
+            function initChart() {
+                const ctx = document.getElementById('progressChart').getContext('2d');
+                const labels = ['จันทร์', 'อังคาร', 'พุธ', 'พฤหัส', 'ศุกร์', 'เสาร์', 'อาทิตย์'];
+                new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'คะแนนรายวัน',
+                            data: weeklyScores,
+                            backgroundColor: 'rgba(13, 148, 136, 0.6)',
+                            borderColor: 'rgba(13, 148, 136, 1)',
+                            borderWidth: 1,
+                            borderRadius: 5,
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: { beginAtZero: true, grid: { color: '#e2e8f0' } },
+                            x: { grid: { display: false } }
+                        },
+                        plugins: {
+                            legend: { display: false },
+                            tooltip: { displayColors: false }
+                        }
+                    }
+                });
+            }
+            
+            saveSettingsBtn.addEventListener('click', saveSettings);
+            loadState();
+            initChart();
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ภารกิจวันนี้ - เส้นทางสร้างวินัย</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'IBM Plex Sans Thai', sans-serif;
+            background-color: #f8fafc;
+        }
+        .task-card.completed {
+            opacity: 0.6;
+            background-color: #f1f5f9;
+        }
+        .task-card.completed h3 {
+            text-decoration: line-through;
+        }
+        .nav-link {
+            @apply px-4 py-2 rounded-full transition-colors font-semibold text-sm md:text-base shadow-sm;
+        }
+        .nav-link.active {
+            @apply bg-teal-500 text-white shadow-md;
+        }
+        .nav-link:not(.active) {
+            @apply bg-white text-slate-700 hover:bg-slate-100;
+        }
+    </style>
+</head>
+<body class="text-slate-800">
+
+    <div class="container mx-auto p-4 md:p-8 max-w-4xl">
+        
+        <header class="text-center mb-8">
+            <h1 class="text-4xl md:text-5xl font-bold text-slate-800">เส้นทางสร้างวินัย</h1>
+            <p class="text-slate-500 mt-2">เลือกทำภารกิจในแต่ละวันเพื่อสะสมคะแนน</p>
+        </header>
+
+        <nav class="flex flex-wrap justify-center mb-8 gap-2 md:gap-4">
+            <a href="./index.html" class="nav-link active">ภารกิจ</a>
+            <a href="./dashboard.html" class="nav-link">แดชบอร์ด</a>
+            <a href="./wallet.html" class="nav-link">กระเป๋าตัง</a>
+            <a href="./body.html" class="nav-link">ร่างกาย</a>
+        </nav>
+
+        <main>
+            <h2 class="text-2xl font-bold mb-4">ภารกิจวันนี้</h2>
+            <p class="text-slate-500 mb-6">เมื่อทำภารกิจสำเร็จ ให้คลิก "สำเร็จ" เพื่อบันทึกคะแนน</p>
+            <div id="task-list" class="space-y-4">
+            </div>
+        </main>
+
+        <section id="tips" class="mt-12">
+            <h2 class="text-2xl font-bold mb-4 text-center">เคล็ดลับสู่ความสำเร็จ</h2>
+            <div class="max-w-4xl mx-auto space-y-3">
+                 <div class="bg-white rounded-lg shadow-sm">
+                    <button class="w-full text-left p-4 font-semibold text-lg flex justify-between items-center accordion-toggle">
+                        <span>ให้รางวัลตัวเอง (Dopamine Boost)</span>
+                        <span>+</span>
+                    </button>
+                    <div class="accordion-content overflow-hidden max-h-0 transition-all duration-500 ease-in-out">
+                        <p class="p-4 pt-0 text-slate-600">เมื่อทำตามแผนได้สำเร็จ (แม้จะเป็นเป้าหมายขั้นต่ำ) ให้รางวัลเล็กๆ น้อยๆ กับตัวเอง เช่น ดูหนัง 1 ตอน หรือกินขนมอร่อยๆ เพื่อให้สมองจดจำว่าการทำสิ่งเหล่านี้เป็นเรื่องที่ดีและน่าทำอีกในครั้งต่อไป</p>
+                    </div>
+                </div>
+                 <div class="bg-white rounded-lg shadow-sm">
+                    <button class="w-full text-left p-4 font-semibold text-lg flex justify-between items-center accordion-toggle">
+                        <span>เป้าหมายขั้นต่ำ/ขั้นสูง (Low Bar/High Bar)</span>
+                        <span>+</span>
+                    </button>
+                    <div class="accordion-content overflow-hidden max-h-0 transition-all duration-500 ease-in-out">
+                        <p class="p-4 pt-0 text-slate-600">ในวันที่รู้สึกขี้เกียจหรือไม่มีเวลา การทำตามเป้าหมาย "ขั้นต่ำ" (Low Bar) ก็ยังดีกว่าไม่ได้ทำอะไรเลย การรักษาความต่อเนื่องสำคัญกว่าความสมบูรณ์แบบในแต่ละครั้ง</p>
+                    </div>
+                </div>
+                 <div class="bg-white rounded-lg shadow-sm">
+                    <button class="w-full text-left p-4 font-semibold text-lg flex justify-between items-center accordion-toggle">
+                        <span>Growth Mindset</span>
+                        <span>+</span>
+                    </button>
+                    <div class="accordion-content overflow-hidden max-h-0 transition-all duration-500 ease-in-out">
+                        <p class="p-4 pt-0 text-slate-600">หากมีวันที่ทำพลาดไป ไม่เป็นไรเลย อย่าตำหนิตัวเอง พรุ่งนี้แค่เริ่มต้นใหม่ คิดเสมอว่านี่คือ "การเล่นเกมอย่างต่อเนื่อง" ไม่ใช่การแข่งขันที่แพ้แล้วจบ ความผิดพลาดคือส่วนหนึ่งของการเติบโต</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </div>
+
+    <div id="modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-2xl p-8 max-w-sm w-full text-center shadow-2xl">
+            <h3 id="modal-title" class="text-2xl font-bold mb-6">ยอดเยี่ยม!</h3>
+            <p class="mb-6">คุณทำภารกิจสำเร็จในระดับไหน?</p>
+            <div class="space-y-4">
+                <button id="low-bar-btn" class="w-full bg-slate-200 hover:bg-slate-300 text-slate-800 font-bold py-3 px-4 rounded-lg transition-colors">เป้าหมายขั้นต่ำ (Low Bar)</button>
+                <button id="high-bar-btn" class="w-full bg-teal-500 hover:bg-teal-600 text-white font-bold py-3 px-4 rounded-lg transition-colors">เป้าหมายขั้นสูง (High Bar)</button>
+            </div>
+             <button id="modal-cancel-btn" class="mt-6 text-slate-500 hover:text-slate-700">ยกเลิก</button>
+        </div>
+    </div>
+
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const taskList = document.getElementById('task-list');
+            const modal = document.getElementById('modal');
+            const modalTitle = document.getElementById('modal-title');
+            const lowBarBtn = document.getElementById('low-bar-btn');
+            const highBarBtn = document.getElementById('high-bar-btn');
+            const modalCancelBtn = document.getElementById('modal-cancel-btn');
+
+            let currentTaskId = null;
+            let tasks = [];
+            let weeklyScores = [];
+
+            const defaultTasks = [
+                { id: 1, time: '4:00 น.', name: 'ตื่นนอน + ดื่มน้ำทันที', lowBarPoints: 10, highBarPoints: 10, period: 'เช้า', completed: null, goalDescription: 'เป้าหมาย: ทำทันที' },
+                { id: 2, time: '4:05 น.', name: 'นั่งสมาธิ', lowBarPoints: 5, highBarPoints: 10, period: 'เช้า', completed: null, goalDescription: 'Low: 2-5 นาที / High: 10-15 นาที' },
+                { id: 3, time: '4:15 น.', name: 'ออกกำลังกาย', lowBarPoints: 15, highBarPoints: 30, period: 'เช้า', completed: null, note: 'จ-ศ: ใช้อุปกรณ์, ส-อา: ไม่ใช้อุปกรณ์', goalDescription: 'Low: 15 นาที / High: 30-45 นาที' },
+                { id: 4, time: 'ช่วงพัก', name: 'ฝึกความมั่นใจ/การนำเสนอ', lowBarPoints: 5, highBarPoints: 10, period: 'กลางวัน', completed: null, goalDescription: 'Low: 2 นาที / High: 5-10 นาที' },
+                { id: 5, time: 'เวลาว่าง', name: 'ฝึกวาดรูป', lowBarPoints: 5, highBarPoints: 20, period: 'กลางวัน', completed: null, goalDescription: 'Low: 5 นาที / High: 30-60 นาที' },
+                { id: 6, time: '19:00 น.', name: 'วินัยการเงิน + วางแผน', lowBarPoints: 5, highBarPoints: 15, period: 'เย็น', completed: null, note: 'Low Bar: จดรวม, High Bar: จดทุกรายการ + วางแผน', goalDescription: 'Low: 2-5 นาที / High: 10-15 นาที' },
+                { id: 7, time: '19:30 น.', name: 'ผ่อนคลายแบบไร้จอ', lowBarPoints: 10, highBarPoints: 10, period: 'เย็น', completed: null, goalDescription: 'เป้าหมาย: 15-30 นาที' },
+                { id: 8, time: '20:00 น.', name: 'เข้านอน', lowBarPoints: 10, highBarPoints: 10, period: 'เย็น', completed: null, goalDescription: 'เป้าหมาย: เข้านอนภายใน 20:00 น.' }
+            ];
+            const defaultWeeklyScores = [0, 0, 0, 0, 0, 0, 0];
+
+            function getWeekNumber(d) {
+                d = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+                d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay()||7));
+                var yearStart = new Date(Date.UTC(d.getUTCFullYear(),0,1));
+                var weekNo = Math.ceil((((d - yearStart) / 86400000) + 1)/7);
+                return [d.getUTCFullYear(), weekNo];
+            }
+
+            function saveState() {
+                const state = JSON.parse(localStorage.getItem('disciplineGameState')) || {};
+                const updatedState = {
+                    ...state,
+                    tasks,
+                    weeklyScores,
+                    lastUpdated: new Date().toISOString().slice(0, 10),
+                    lastUpdatedWeek: getWeekNumber(new Date())
+                };
+                localStorage.setItem('disciplineGameState', JSON.stringify(updatedState));
+            }
+
+            function loadState() {
+                const savedState = localStorage.getItem('disciplineGameState');
+                const today = new Date().toISOString().slice(0, 10);
+                const currentWeek = getWeekNumber(new Date());
+
+                if (savedState) {
+                    const state = JSON.parse(savedState);
+                    const savedWeek = state.lastUpdatedWeek || getWeekNumber(new Date(state.lastUpdated));
+                    
+                    if (currentWeek.join('-') !== savedWeek.join('-')) {
+                        const lastWeekTotalScore = (state.weeklyScores || defaultWeeklyScores).reduce((a, b) => a + b, 0);
+                        tasks = defaultTasks.map(t => ({...t, completed: null}));
+                        weeklyScores = defaultWeeklyScores;
+                        
+                        const newState = { ...state, tasks, weeklyScores, lastWeekTotalScore, lastUpdated: today, lastUpdatedWeek: currentWeek };
+                        localStorage.setItem('disciplineGameState', JSON.stringify(newState));
+
+                    } else if (state.lastUpdated !== today) {
+                        tasks = defaultTasks.map(t => ({...t, completed: null}));
+                        weeklyScores = state.weeklyScores || defaultWeeklyScores;
+                        saveState();
+                    } else {
+                        tasks = state.tasks || defaultTasks;
+                        weeklyScores = state.weeklyScores || defaultWeeklyScores;
+                    }
+                } else {
+                    tasks = defaultTasks;
+                    weeklyScores = defaultWeeklyScores;
+                    saveState();
+                }
+            }
+            
+            function renderTasks() {
+                taskList.innerHTML = '';
+                const periods = ['เช้า', 'กลางวัน', 'เย็น'];
+                periods.forEach(period => {
+                    const periodTasks = tasks.filter(t => t.period === period);
+                    if (periodTasks.length > 0) {
+                        const periodHeader = document.createElement('h3');
+                        periodHeader.className = 'text-xl font-semibold mt-6 mb-2 text-slate-600';
+                        periodHeader.textContent = `ช่วง${period}`;
+                        taskList.appendChild(periodHeader);
+
+                        periodTasks.forEach(task => {
+                            const card = document.createElement('div');
+                            card.className = `task-card bg-white p-4 rounded-lg shadow-sm flex items-center justify-between transition-all ${task.completed ? 'completed' : ''}`;
+                            
+                            let pointsText = '';
+                            if (task.completed === 'low') pointsText = `<span class="text-slate-500 font-semibold">+${task.lowBarPoints} pts</span>`;
+                            if (task.completed === 'high') pointsText = `<span class="text-teal-600 font-bold">+${task.highBarPoints} pts</span>`;
+
+                            card.innerHTML = `
+                                <div class="flex items-start">
+                                    <div class="text-center w-16 mr-4 flex-shrink-0">
+                                        <p class="font-bold text-lg text-slate-700">${task.time}</p>
+                                    </div>
+                                    <div>
+                                        <h3 class="font-semibold text-lg">${task.name}</h3>
+                                        ${task.goalDescription ? `<p class="text-sm text-teal-700 font-medium">${task.goalDescription}</p>` : ''}
+                                        ${task.note ? `<p class="text-sm text-slate-500 mt-1">${task.note}</p>` : ''}
+                                    </div>
+                                </div>
+                                <div class="flex items-center">
+                                    ${pointsText}
+                                    <button data-id="${task.id}" class="complete-btn ml-4 bg-teal-500 hover:bg-teal-600 text-white font-bold py-2 px-5 rounded-full transition-colors ${task.completed ? 'hidden' : ''}">สำเร็จ</button>
+                                    <span class="complete-icon ml-4 text-green-500 ${task.completed ? '' : 'hidden'}">✓</span>
+                                </div>
+                            `;
+                            taskList.appendChild(card);
+                        });
+                    }
+                });
+                addEventListeners();
+            }
+
+            function addEventListeners() {
+                document.querySelectorAll('.complete-btn').forEach(button => {
+                    button.addEventListener('click', (e) => {
+                        currentTaskId = parseInt(e.target.dataset.id);
+                        const task = tasks.find(t => t.id === currentTaskId);
+                        modalTitle.textContent = task.name;
+                        lowBarBtn.textContent = `เป้าหมายขั้นต่ำ (+${task.lowBarPoints} pts)`;
+                        highBarBtn.textContent = `เป้าหมายขั้นสูง (+${task.highBarPoints} pts)`;
+                        modal.classList.remove('hidden');
+                    });
+                });
+            }
+
+            function completeTask(level) {
+                const task = tasks.find(t => t.id === currentTaskId);
+                if (task && !task.completed) {
+                    task.completed = level;
+                }
+                closeModal();
+                updateScores();
+                renderTasks();
+            }
+
+            function updateScores() {
+                const todayTotalScore = tasks.reduce((sum, task) => {
+                    if (task.completed === 'low') return sum + task.lowBarPoints;
+                    if (task.completed === 'high') return sum + task.highBarPoints;
+                    return sum;
+                }, 0);
+                const dayOfWeek = (new Date().getDay() + 6) % 7; // Monday = 0, Sunday = 6
+                weeklyScores[dayOfWeek] = todayTotalScore;
+                saveState();
+            }
+
+            function closeModal() {
+                modal.classList.add('hidden');
+                currentTaskId = null;
+            }
+
+            lowBarBtn.addEventListener('click', () => completeTask('low'));
+            highBarBtn.addEventListener('click', () => completeTask('high'));
+            modalCancelBtn.addEventListener('click', closeModal);
+            modal.addEventListener('click', (e) => {
+                if(e.target === modal) closeModal();
+            });
+            
+            document.querySelectorAll('.accordion-toggle').forEach(toggle => {
+                toggle.addEventListener('click', () => {
+                    const content = toggle.nextElementSibling;
+                    const icon = toggle.querySelector('span:last-child');
+                    if (content.style.maxHeight) {
+                        content.style.maxHeight = null;
+                        icon.textContent = '+';
+                    } else {
+                        content.style.maxHeight = content.scrollHeight + "px";
+                        icon.textContent = '-';
+                    }
+                });
+            });
+
+            loadState();
+            renderTasks();
+        });
+    </script>
+</body>
+</html>
