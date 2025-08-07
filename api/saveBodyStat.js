@@ -1,33 +1,60 @@
-// ต้องติดตั้ง @notionhq/client ก่อน: npm install @notionhq/client
-import { Client } from "@notionhq/client";
+const { Client } = require('@notionhq/client');
 
-// 1. ดึง "กุญแจลับ" และ "ID ของ Database" มาจาก Environment Variables
 const notion = new Client({ auth: process.env.NOTION_API_KEY });
 const databaseId = process.env.NOTION_BODY_DB_ID;
 
-// 2. นี่คือ Serverless Function ที่จะทำงาน
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ message: 'Method Not Allowed' });
   }
 
   try {
-    // 3. ดึงข้อมูลที่ส่งมาจาก Frontend
     const { date, weight, water, fat } = req.body;
 
-    // 4. ส่งข้อมูลไปสร้างหน้าใหม่ใน Notion Database
-    await notion.pages.create({
-      parent: { database_id: databaseId },
-      properties: {
+    // Check if a page for today already exists
+    const searchResponse = await notion.databases.query({
+      database_id: databaseId,
+      filter: {
+        property: 'Date',
+        date: {
+          equals: date,
+        },
+      },
+    });
+
+    const properties = {
         'Date': { date: { start: date } },
         'Weight (kg)': { number: weight },
         '% Water': { number: water },
         '% Fat': { number: fat },
-      },
-    });
+    };
 
-    res.status(200).json({ message: 'Success' });
+    if (searchResponse.results.length > 0) {
+      // Update existing page
+      const pageId = searchResponse.results[0].id;
+      // Get existing properties to avoid overwriting with null
+      const existingPage = await notion.pages.retrieve({ page_id: pageId });
+      
+      const updatedProperties = { ...existingPage.properties };
+      if (weight !== null) updatedProperties['Weight (kg)'].number = weight;
+      if (water !== null) updatedProperties['% Water'].number = water;
+      if (fat !== null) updatedProperties['% Fat'].number = fat;
+
+      await notion.pages.update({
+        page_id: pageId,
+        properties: updatedProperties,
+      });
+    } else {
+      // Create new page
+      await notion.pages.create({
+        parent: { database_id: databaseId },
+        properties: properties,
+      });
+    }
+
+    res.status(200).json({ message: 'Successfully saved data to Notion' });
   } catch (error) {
-    res.status(500).json({ message: 'Something went wrong' });
+    console.error(error);
+    res.status(500).json({ message: 'Error saving data to Notion' });
   }
 }
