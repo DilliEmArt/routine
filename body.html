@@ -114,44 +114,37 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            const formContainer = document.getElementById('form-container');
             const bodyForm = document.getElementById('body-form');
             const formMessage = document.getElementById('form-message');
-            
             const weightInput = document.getElementById('weight');
             const waterInput = document.getElementById('water');
             const fatInput = document.getElementById('fat');
-            
             const saveWeightBtn = document.getElementById('save-weight-btn');
             const saveWaterBtn = document.getElementById('save-water-btn');
             const saveFatBtn = document.getElementById('save-fat-btn');
-
             const historyTableBody = document.getElementById('history-table-body');
             const chartCanvas = document.getElementById('bodyChart');
 
             let bodyStats = [];
             let bodyChart;
 
-            function loadState() {
-                const savedState = localStorage.getItem('disciplineGameState');
-                if (savedState) {
-                    const state = JSON.parse(savedState);
-                    bodyStats = state.bodyStats || [];
+            async function loadState() {
+                try {
+                    const res = await fetch('/api/getBodyStats');
+                    if (!res.ok) throw new Error('Failed to fetch data');
+                    bodyStats = await res.json();
+                    renderHistory();
+                    initChart();
+                    checkDay();
+                } catch (error) {
+                    console.error(error);
+                    alert('ไม่สามารถโหลดข้อมูลจาก Notion ได้');
                 }
-                renderHistory();
-                initChart();
-                checkDay();
-            }
-
-            function saveState() {
-                const savedState = JSON.parse(localStorage.getItem('disciplineGameState')) || {};
-                const newState = { ...savedState, bodyStats };
-                localStorage.setItem('disciplineGameState', JSON.stringify(newState));
             }
             
             function checkDay() {
                 const today = new Date();
-                const day = today.getDay(); // Sunday = 0, Saturday = 6
+                const day = today.getDay();
                 const todayStr = today.toISOString().slice(0, 10);
                 const todayStat = bodyStats.find(stat => stat.date === todayStr);
 
@@ -193,27 +186,31 @@
                 }
             }
 
-            function saveOrUpdateStat(metric, value) {
+            async function saveOrUpdateStat(metric, value) {
                 if (isNaN(value) || value <= 0) {
                     alert('กรุณาใส่ค่าที่ถูกต้อง');
                     return;
                 }
                 const todayStr = new Date().toISOString().slice(0, 10);
-                let todayStat = bodyStats.find(stat => stat.date === todayStr);
-
-                if (todayStat) {
-                    todayStat[metric] = value;
-                } else {
-                    todayStat = { date: todayStr, weight: null, water: null, fat: null };
-                    todayStat[metric] = value;
-                    bodyStats.push(todayStat);
-                }
+                let todayStat = bodyStats.find(stat => stat.date === todayStr) || { date: todayStr, weight: null, water: null, fat: null };
                 
-                bodyStats.sort((a, b) => new Date(a.date) - new Date(b.date));
-                saveState();
-                renderHistory();
-                updateChart();
-                checkDay();
+                todayStat[metric] = value;
+
+                try {
+                    const res = await fetch('/api/saveBodyStat', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(todayStat),
+                    });
+                    if (!res.ok) throw new Error('Failed to save data');
+                    
+                    // Reload data from Notion to ensure consistency
+                    await loadState();
+
+                } catch (error) {
+                    console.error(error);
+                    alert('เกิดข้อผิดพลาดในการบันทึกข้อมูล');
+                }
             }
 
             function renderHistory() {
@@ -238,6 +235,9 @@
                 const fatData = bodyStats.map(s => s.fat);
 
                 const ctx = chartCanvas.getContext('2d');
+                if(bodyChart) {
+                    bodyChart.destroy();
+                }
                 bodyChart = new Chart(ctx, {
                     type: 'line',
                     data: {
@@ -246,7 +246,7 @@
                             {
                                 label: 'น้ำหนัก (kg)',
                                 data: weightData,
-                                borderColor: '#0f766e', // teal-700
+                                borderColor: '#0f766e',
                                 backgroundColor: 'rgba(13, 148, 136, 0.1)',
                                 tension: 0.1,
                                 yAxisID: 'y'
@@ -254,7 +254,7 @@
                             {
                                 label: '% น้ำ',
                                 data: waterData,
-                                borderColor: '#0ea5e9', // sky-500
+                                borderColor: '#0ea5e9',
                                 backgroundColor: 'rgba(14, 165, 233, 0.1)',
                                 tension: 0.1,
                                 yAxisID: 'y1'
@@ -262,7 +262,7 @@
                             {
                                 label: '% ไขมัน',
                                 data: fatData,
-                                borderColor: '#f43f5e', // rose-500
+                                borderColor: '#f43f5e',
                                 backgroundColor: 'rgba(244, 63, 94, 0.1)',
                                 tension: 0.1,
                                 yAxisID: 'y1'
@@ -272,43 +272,13 @@
                     options: {
                         responsive: true,
                         maintainAspectRatio: false,
-                        interaction: {
-                            mode: 'index',
-                            intersect: false,
-                        },
+                        interaction: { mode: 'index', intersect: false },
                         scales: {
-                            y: {
-                                type: 'linear',
-                                display: true,
-                                position: 'left',
-                                title: {
-                                    display: true,
-                                    text: 'น้ำหนัก (kg)'
-                                }
-                            },
-                            y1: {
-                                type: 'linear',
-                                display: true,
-                                position: 'right',
-                                title: {
-                                    display: true,
-                                    text: 'เปอร์เซ็นต์ (%)'
-                                },
-                                grid: {
-                                    drawOnChartArea: false, 
-                                },
-                            },
+                            y: { type: 'linear', display: true, position: 'left', title: { display: true, text: 'น้ำหนัก (kg)' } },
+                            y1: { type: 'linear', display: true, position: 'right', title: { display: true, text: 'เปอร์เซ็นต์ (%)' }, grid: { drawOnChartArea: false } },
                         }
                     }
                 });
-            }
-
-            function updateChart() {
-                bodyChart.data.labels = bodyStats.map(s => new Date(s.date).toLocaleDateString('th-TH', { day: 'numeric', month: 'short' }));
-                bodyChart.data.datasets[0].data = bodyStats.map(s => s.weight);
-                bodyChart.data.datasets[1].data = bodyStats.map(s => s.water);
-                bodyChart.data.datasets[2].data = bodyStats.map(s => s.fat);
-                bodyChart.update();
             }
 
             saveWeightBtn.addEventListener('click', () => saveOrUpdateStat('weight', parseFloat(weightInput.value)));
@@ -319,5 +289,4 @@
         });
     </script>
 </body>
-
 </html>
